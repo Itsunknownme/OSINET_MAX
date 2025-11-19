@@ -173,6 +173,5 @@ if __name__ == "__main__":
     except KeyboardInterrupt:
         logger.info("🛑 Bot stopped by user")
     except Exception as e:
-        logger.error(f"❌ Unexpected error: {e}")
-        sys.exit(1)")
+        logger.error(f"❌ Fatal error: {e}")
         sys.exit(1)
