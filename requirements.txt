@@ -1,14 +1,8 @@
-pyrogram==2.0.106
-tgcrypto
-requests
-beautifulsoup4
+python-telegram-bot==20.8
 python-dotenv
+requests
 aiohttp
-aiodns
 httpx
-urllib3
+beautifulsoup4
 lxml
 pillow
-pytesseract
-fake-useragent
-flask
