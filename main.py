@@ -49,7 +49,6 @@ class TelegramBot:
         try:
             await self.clear_webhooks()
 
-            # Build app
             self.application = (
                 Application.builder()
                 .token(self.config.BOT_TOKEN)
@@ -66,7 +65,7 @@ class TelegramBot:
             return False
 
     async def clear_webhooks(self):
-        """Clear old webhooks (Render only supports polling)."""
+        """Clear old webhooks for Render polling."""
         try:
             import requests
             r = requests.post(
@@ -81,9 +80,8 @@ class TelegramBot:
             logger.warning(f"⚠️ Webhook clear error: {e}")
 
     async def add_handlers(self):
-        """Load command + message handlers"""
+        """Load handlers"""
         try:
-            # Commands
             self.application.add_handler(CommandHandler("start", self.handlers.start_command))
             self.application.add_handler(CommandHandler("help", self.handlers.help_command))
             self.application.add_handler(CommandHandler("trace", self.handlers.trace_command))
@@ -92,18 +90,14 @@ class TelegramBot:
             self.application.add_handler(CommandHandler("admin", self.handlers.admin_command))
             self.application.add_handler(CommandHandler("broadcast", self.handlers.broadcast_command))
 
-            # Callback button handler
             self.application.add_handler(CallbackQueryHandler(self.handlers.button_callback))
 
-            # Photo handler
             self.application.add_handler(MessageHandler(filters.PHOTO, self.handlers.photo_handler))
 
-            # Text handler
             self.application.add_handler(
                 MessageHandler(filters.TEXT & ~filters.COMMAND, self.handlers.text_handler)
             )
 
-            # Error handler
             self.application.add_error_handler(self.handlers.error_handler)
 
             logger.info("✅ Handlers added")
@@ -113,22 +107,28 @@ class TelegramBot:
             raise
 
     async def start_polling(self):
-        """Start bot polling using PTB 20+ API"""
+        """Start polling WITHOUT closing the event loop (Render-safe)."""
         try:
             logger.info("🚀 Starting bot polling...")
-            await self.application.run_polling(
-                drop_pending_updates=True,
-                allowed_updates=["message", "callback_query"]
-            )
+
+            # Manual start sequence — avoids "Cannot close running event loop"
+            await self.application.initialize()
+            await self.application.start()
+            await self.application.updater.start_polling()
+
+            # Keep running forever
+            await asyncio.Event().wait()
+
         except Exception as e:
             logger.error(f"❌ Error during polling: {e}")
             raise
 
     async def stop_bot(self):
-        """Graceful stop"""
+        """Gracefully stop the bot."""
         try:
             if self.application:
                 logger.info("🛑 Stopping bot...")
+                await self.application.updater.stop()
                 await self.application.stop()
                 await self.application.shutdown()
                 logger.info("✅ Bot stopped successfully")
