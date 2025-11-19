@@ -11,7 +11,13 @@ import signal
 import sys
 from datetime import datetime
 
-from telegram.ext import Application, CommandHandler, CallbackQueryHandler, MessageHandler, filters
+from telegram.ext import (
+    Application,
+    CommandHandler,
+    CallbackQueryHandler,
+    MessageHandler,
+    filters
+)
 
 from config import Config
 from bot_handlers import BotHandlers
@@ -24,7 +30,7 @@ logging.basicConfig(
     level=logging.INFO,
     handlers=[
         logging.FileHandler('bot.log'),
-        logging.StreamHandler(sys.stdout)
+        StreamHandler := logging.StreamHandler(sys.stdout)
     ]
 )
 logger = logging.getLogger(__name__)
@@ -43,7 +49,7 @@ class TelegramBot:
             # Clear any existing webhooks
             await self.clear_webhooks()
             
-            # Create application
+            # Create application (PTB 20+)
             self.application = Application.builder().token(self.config.BOT_TOKEN).build()
             
             # Add handlers
@@ -104,22 +110,19 @@ class TelegramBot:
             raise
     
     async def start_polling(self):
-        """Start the bot with polling"""
+        """Start the bot with polling (PTB 20+)"""
         try:
             logger.info("🚀 Starting bot polling...")
+
             await self.application.initialize()
             await self.application.start()
-            await self.application.updater.start_polling(
+
+            # FIXED: PTB 20+ uses run_polling(), NOT updater.start_polling()
+            await self.application.run_polling(
                 drop_pending_updates=True,
                 allowed_updates=['message', 'callback_query']
             )
             
-            logger.info("✅ Bot is running! Press Ctrl+C to stop.")
-            
-            # Keep the bot running
-            while True:
-                await asyncio.sleep(1)
-                
         except KeyboardInterrupt:
             logger.info("🛑 Bot stopped by user")
         except Exception as e:
@@ -129,11 +132,10 @@ class TelegramBot:
             await self.stop_bot()
     
     async def stop_bot(self):
-        """Stop the bot gracefully"""
+        """Stop the bot gracefully (PTB 20+)"""
         try:
             if self.application:
                 logger.info("🛑 Stopping bot...")
-                await self.application.updater.stop()
                 await self.application.stop()
                 await self.application.shutdown()
                 logger.info("✅ Bot stopped successfully")
@@ -172,4 +174,5 @@ if __name__ == "__main__":
         logger.info("🛑 Bot stopped by user")
     except Exception as e:
         logger.error(f"❌ Unexpected error: {e}")
+        sys.exit(1)")
         sys.exit(1)
