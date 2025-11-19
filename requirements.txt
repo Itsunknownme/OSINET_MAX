@@ -1,0 +1,14 @@
+pyrogram==2.0.106
+tgcrypto
+requests
+beautifulsoup4
+python-dotenv
+aiohttp
+aiodns
+httpx
+urllib3
+lxml
+pillow
+pytesseract
+fake-useragent
+flask
