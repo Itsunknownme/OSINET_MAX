@@ -11,8 +11,8 @@ class Config:
     
     def __init__(self):
         # Bot configuration
-        self.BOT_TOKEN = os.getenv('BOT_TOKEN', '7871986729:AAGnh_bDxosgxMXdObBVxr3ZAkp-6oKNWFg')
-        self.ADMIN_ID = int(os.getenv('ADMIN_ID', '1783306092'))
+        self.BOT_TOKEN = os.getenv('BOT_TOKEN', '')
+        self.ADMIN_ID = int(os.getenv('ADMIN_ID', ''))
         
         # Validate required environment variables
         if not self.BOT_TOKEN:
